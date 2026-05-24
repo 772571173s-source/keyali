@@ -1,0 +1,174 @@
+/* إعدادات الخطوط والألوان العامة للموقع (Dark Mode) */
+:root {
+    --bg-main: #0f172a;       /* لون الخلفية الأساسي - كحلي داكن جداً */
+    --bg-card: #1e293b;       /* لون خلفية الكروت والناف بار */
+    --text-main: #f8fafc;     /* لون النص الأساسي - أبيض ناصع مريح */
+    --text-muted: #94a3b8;    /* لون النصوص الثانوية - رمادي */
+    --accent: #38bdf8;        /* اللون المميز للموقع - أزرق سماوي مضيء */
+    --success: #4ade80;       /* لون الإجابة الصحيحة - أخضر نيون */
+    --error: #f87171;         /* لون الإجابة الخاطئة - أحمر نيون */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Tajawal', sans-serif;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* الناف بار الاحترافي */
+.navbar {
+    background-color: var(--bg-card);
+    border-bottom: 1px solid #334155;
+    padding: 15px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-container {
+    width: 85%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent);
+    text-decoration: none;
+    letter-spacing: 1px;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+    align-items: center;
+}
+
+.nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 16px;
+    transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: var(--accent);
+}
+
+.admin-btn {
+    background-color: #334155;
+    padding: 8px 15px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    color: var(--accent) !important;
+}
+
+.admin-btn:hover {
+    background-color: var(--accent);
+    color: var(--bg-main) !important;
+}
+
+/* حاوية المحتوى */
+.main-content {
+    flex: 1;
+    width: 85%;
+    max-width: 1200px;
+    margin: 40px auto;
+}
+
+/* الواجهة الترحيبية */
+.hero-section {
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.hero-section h1 {
+    font-size: 42px;
+    margin-bottom: 15px;
+}
+
+.highlight {
+    color: var(--accent);
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
+
+.hero-section p {
+    color: var(--text-muted);
+    font-size: 18px;
+    max-width: 600px;
+    margin: 0 auto 40px auto;
+}
+
+/* شبكة الكروت والمميزات */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.card {
+    background-color: var(--bg-card);
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    text-align: right;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent);
+}
+
+.card h3 {
+    font-size: 22px;
+    margin-bottom: 15px;
+    color: var(--text-main);
+}
+
+.card p {
+    color: var(--text-muted);
+    font-size: 15px;
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+.btn {
+    display: inline-block;
+    background-color: var(--accent);
+    color: var(--bg-main);
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #7dd3fc;
+}
+
+/* الجزء السفلي للموقع */
+.footer {
+    background-color: var(--bg-card);
+    text-align: center;
+    padding: 20px;
+    color: var(--text-muted);
+    border-top: 1px solid #334155;
+    font-size: 14px;
+}
