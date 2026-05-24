@@ -5,7 +5,7 @@ include 'config/db.php';
 
 // التأكد من أن الطلب قادم عبر POST وأن المستخدم مسجل دخوله
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
-    
+
     // استقبال البيانات القادمة من الجافاسكربت
     $input = json_decode(file_get_contents('php://input'), true);
     $score = isset($input['score']) ? intval($input['score']) : 0;
@@ -19,12 +19,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
 
         if ($user) {
             $old_score = intval($user['ghost_words_streak']);
-            
+
             // 2. تحديث السكور فقط إذا كان السكور الحالي أعلى من سكور المستخدم السابق
             if ($score > $old_score) {
                 $update_stmt = $pdo->prepare("UPDATE users SET ghost_words_streak = ? WHERE id = ?");
                 $update_stmt->execute([$score, $user_id]);
-                
+
                 echo json_encode(['status' => 'success', 'message' => '🔥 رقم قياسي جديد تم حفظه بنجاح!']);
                 exit;
             } else {

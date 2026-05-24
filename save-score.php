@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['score']) && isset($_POST['streak'])) {
-    
+
     $new_score = (int)$_POST['score'];
     $new_streak = (int)$_POST['streak'];
     $user_id = $_SESSION['user_id']; // الـ ID الحقيقي القادم من الجلسة الآمنة
@@ -40,7 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['score']) && isset($_P
         } else {
             echo json_encode(['status' => 'error', 'message' => 'لم يتم العثور على بيانات المستخدم في النظام.']);
         }
-
     } catch (PDOException $e) {
         echo json_encode(['status' => 'error', 'message' => 'خطأ في السيرفر: ' . $e->getMessage()]);
     }

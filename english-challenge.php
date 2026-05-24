@@ -1,7 +1,7 @@
-<?php 
+<?php
 // 1. تضمين ملف الاتصال بقاعدة البيانات وملف الناف بار المشترك
 include 'config/db.php';
-include 'includes/header.php'; 
+include 'includes/header.php';
 
 // 2. جلب جميع الجمل الجاهزة من بنك التحديات
 try {
@@ -13,8 +13,14 @@ try {
 ?>
 
 <style>
-    .challenge-box { max-width: 800px; margin: 40px auto; text-align: center; padding: 0 15px; box-sizing: border-box; }
-    
+    .challenge-box {
+        max-width: 800px;
+        margin: 40px auto;
+        text-align: center;
+        padding: 0 15px;
+        box-sizing: border-box;
+    }
+
     /* كارت التحدي السينمائي المظلم المطور */
     .sentence-card {
         background: linear-gradient(135deg, #0f172a, #020617);
@@ -22,13 +28,14 @@ try {
         border-radius: 20px;
         padding: 50px 30px;
         margin-bottom: 25px;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
         position: relative;
         box-sizing: border-box;
         width: 100%;
-        transition: all 0.3s ease; /* تأثير ناعم عند تقلص الحجم على الموبايل */
+        transition: all 0.3s ease;
+        /* تأثير ناعم عند تقلص الحجم على الموبايل */
     }
-    
+
     /* عرض الجملة الإنجليزية بخط كبير ومتجاوب */
     .sentence-display {
         font-family: 'Fira Code', 'Courier New', monospace;
@@ -37,7 +44,8 @@ try {
         line-height: 1.6;
         word-break: break-word;
         margin-bottom: 15px;
-        direction: ltr; /* من اليسار لليمين دائماً لأنها إنجليزي */
+        direction: ltr;
+        /* من اليسار لليمين دائماً لأنها إنجليزي */
     }
 
     /* مظهر الفراغ الملون المشع */
@@ -68,10 +76,12 @@ try {
         display: flex;
         align-items: center;
         gap: 10px;
-        direction: rtl; /* لتبدأ العناصر من اليمين لليسار */
+        direction: rtl;
+        /* لتبدأ العناصر من اليمين لليسار */
     }
 
-    .hint-bulb-btn, .speaker-btn {
+    .hint-bulb-btn,
+    .speaker-btn {
         background: rgba(245, 158, 11, 0.1);
         border: 1px solid rgba(245, 158, 11, 0.3);
         color: #f59e0b;
@@ -86,12 +96,13 @@ try {
         width: 42px;
         height: 42px;
     }
-    
+
     .speaker-btn {
         background: rgba(56, 189, 248, 0.1);
         border-color: rgba(56, 189, 248, 0.3);
         color: #38bdf8;
-        opacity: 0.3; /* تكون شبه شفافة قبل الحل كإشارة أنها غير مفعلة */
+        opacity: 0.3;
+        /* تكون شبه شفافة قبل الحل كإشارة أنها غير مفعلة */
         cursor: not-allowed;
     }
 
@@ -105,9 +116,17 @@ try {
     }
 
     @keyframes pulseSpeaker {
-        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-        70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        0% {
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+        }
+
+        70% {
+            box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+        }
     }
 
     .hint-bulb-btn:hover {
@@ -133,7 +152,12 @@ try {
     }
 
     /* حقل الكتابة والتكرار الاحترافي المتجاوب */
-    .challenge-input-container { width: 100%; display: flex; justify-content: center; }
+    .challenge-input-container {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
     .challenge-input {
         width: 100%;
         max-width: 450px;
@@ -150,10 +174,12 @@ try {
         direction: ltr;
         box-sizing: border-box;
     }
+
     .challenge-input:focus {
         border-color: var(--accent);
         box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
     }
+
     .challenge-input.input-error {
         border-color: var(--error) !important;
         box-shadow: 0 0 15px rgba(248, 113, 113, 0.3);
@@ -173,37 +199,114 @@ try {
         transition: transform 0.2s ease;
     }
 
-    .feedback-zone { min-height: 40px; font-size: clamp(16px, 4.5vw, 22px); font-weight: bold; margin-bottom: 20px; padding: 0 10px; }
-    .text-success { color: var(--success); text-shadow: 0 0 10px rgba(74, 222, 128, 0.4); }
-    .text-error { color: var(--error); }
+    .feedback-zone {
+        min-height: 40px;
+        font-size: clamp(16px, 4.5vw, 22px);
+        font-weight: bold;
+        margin-bottom: 20px;
+        padding: 0 10px;
+    }
 
-    .controls-row { margin-top: 25px; width: 100%; }
-    .btn-skip { background-color: #475569; color: #fff; padding: 12px 30px; font-size: 16px; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; transition: all 0.2s; width: 100%; max-width: 250px; }
-    .btn-skip:hover { background-color: #64748b; }
+    .text-success {
+        color: var(--success);
+        text-shadow: 0 0 10px rgba(74, 222, 128, 0.4);
+    }
+
+    .text-error {
+        color: var(--error);
+    }
+
+    .controls-row {
+        margin-top: 25px;
+        width: 100%;
+    }
+
+    .btn-skip {
+        background-color: #475569;
+        color: #fff;
+        padding: 12px 30px;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        width: 100%;
+        max-width: 250px;
+    }
+
+    .btn-skip:hover {
+        background-color: #64748b;
+    }
 
     /* 📱 التحديث الذكي للشاشات الصغيرة لتوفير مساحة عند ظهور الكيبورد */
     @media (max-width: 768px) {
-        .challenge-box { margin: 15px auto; }
-        .score-badge { margin-bottom: 15px; padding: 5px 15px; font-size: 14px; }
-        
+        .challenge-box {
+            margin: 15px auto;
+        }
+
+        .score-badge {
+            margin-bottom: 15px;
+            padding: 5px 15px;
+            font-size: 14px;
+        }
+
         /* تقليص حجم الكارت لضمان بقائه مرئياً بالكامل فوق لوحة مفاتيح الجوال */
-        .sentence-card { 
-            padding: 65px 15px 20px 15px; 
-            margin-bottom: 15px; 
+        .sentence-card {
+            padding: 65px 15px 20px 15px;
+            margin-bottom: 15px;
             border-radius: 12px;
         }
-        
-        .hint-container { right: 50%; transform: translateX(50%); top: 12px; width: 95%; justify-content: center; gap: 8px; }
-        .hint-bulb-btn, .speaker-btn { width: 36px; height: 36px; font-size: 15px; }
-        .hint-display-box { padding: 4px 10px; font-size: 13px; }
-        
-        .sentence-display { margin-bottom: 10px; line-height: 1.4; }
-        .hint-translation { padding: 5px 15px; margin-top: 5px; }
-        
-        .feedback-zone { min-height: 30px; margin-bottom: 10px; }
-        .challenge-input { padding: 12px 15px; border-radius: 10px; }
-        .controls-row { margin-top: 15px; }
-        .btn-skip { max-width: 100%; padding: 10px; }
+
+        .hint-container {
+            right: 50%;
+            transform: translateX(50%);
+            top: 12px;
+            width: 95%;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .hint-bulb-btn,
+        .speaker-btn {
+            width: 36px;
+            height: 36px;
+            font-size: 15px;
+        }
+
+        .hint-display-box {
+            padding: 4px 10px;
+            font-size: 13px;
+        }
+
+        .sentence-display {
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .hint-translation {
+            padding: 5px 15px;
+            margin-top: 5px;
+        }
+
+        .feedback-zone {
+            min-height: 30px;
+            margin-bottom: 10px;
+        }
+
+        .challenge-input {
+            padding: 12px 15px;
+            border-radius: 10px;
+        }
+
+        .controls-row {
+            margin-top: 15px;
+        }
+
+        .btn-skip {
+            max-width: 100%;
+            padding: 10px;
+        }
     }
 </style>
 
@@ -212,7 +315,7 @@ try {
     <p style="color: var(--text-muted); margin-bottom: 30px; font-size: 14px;">شريكي الخارق، اقرأ الجملة بتمعن، واعرف الكلمة الناقصة المترجمة بالأسفل، ثم اكتبها واضغط <span class="highlight">Enter</span> أو <span class="highlight">Space</span>!</p>
 
     <?php if (count($all_challenges) > 0): ?>
-        
+
         <div class="score-badge">🏆 النقاط المحققة: <span id="score-count">0</span></div>
 
         <div class="sentence-card">
@@ -227,7 +330,7 @@ try {
                 <button type="button" id="speak-sentence-btn" class="speaker-btn" title="استمع للجملة كاملة بعد حلها! 🔊" disabled>🔊</button>
                 <div id="hint-display" class="hint-display-box"></div>
             </div>
-            
+
             <div class="sentence-display" id="sentence-text">Loading challenge...</div>
             <div class="hint-translation" id="translation-text">الترجمة: جاري التحميل...</div>
         </div>
@@ -255,179 +358,179 @@ try {
 </script>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    const sentenceText = document.getElementById("sentence-text");
-    const translationText = document.getElementById("translation-text");
-    const challengeField = document.getElementById("challenge-field");
-    const challengeFeedback = document.getElementById("challenge-feedback");
-    const scoreCount = document.getElementById("score-count");
-    const skipBtn = document.getElementById("skip-btn");
-    
-    const bulbHintBtn = document.getElementById("bulb-hint-btn");
-    const speakSentenceBtn = document.getElementById("speak-sentence-btn");
-    const hintDisplay = document.getElementById("hint-display");
+    document.addEventListener("DOMContentLoaded", () => {
+        const sentenceText = document.getElementById("sentence-text");
+        const translationText = document.getElementById("translation-text");
+        const challengeField = document.getElementById("challenge-field");
+        const challengeFeedback = document.getElementById("challenge-feedback");
+        const scoreCount = document.getElementById("score-count");
+        const skipBtn = document.getElementById("skip-btn");
 
-    if (bankChallenges.length === 0) return;
+        const bulbHintBtn = document.getElementById("bulb-hint-btn");
+        const speakSentenceBtn = document.getElementById("speak-sentence-btn");
+        const hintDisplay = document.getElementById("hint-display");
 
-    let currentIdx = 0;
-    let score = 0;
-    let currentChallengeObj = {};
-    let revealedCharactersCount = 0;
-    let isCurrentChallengeSolved = false; 
+        if (bankChallenges.length === 0) return;
 
-    const normalKeySound = new Audio("assets/sounds/click.mp3");
-    const spaceKeySound = new Audio("assets/sounds/space.mp3");
-    normalKeySound.preload = "auto";
-    spaceKeySound.preload = "auto";
+        let currentIdx = 0;
+        let score = 0;
+        let currentChallengeObj = {};
+        let revealedCharactersCount = 0;
+        let isCurrentChallengeSolved = false;
 
-    function playSound(isSpecial = false) {
-        try {
-            if (isSpecial) {
-                spaceKeySound.currentTime = 0;
-                spaceKeySound.play().catch(e => {});
-            } else {
-                normalKeySound.currentTime = 0;
-                normalKeySound.play().catch(e => {});
-            }
-        } catch(e) {}
-    }
+        const normalKeySound = new Audio("assets/sounds/click.mp3");
+        const spaceKeySound = new Audio("assets/sounds/space.mp3");
+        normalKeySound.preload = "auto";
+        spaceKeySound.preload = "auto";
 
-    function speakFullSolvedSentence() {
-        if (!currentChallengeObj.sentence) return;
-        window.speechSynthesis.cancel(); 
-        
-        let fullCorrectSentence = currentChallengeObj.sentence.replace("___", currentChallengeObj.correct_word.trim());
-
-        let utterance = new SpeechSynthesisUtterance(fullCorrectSentence);
-        utterance.lang = 'en-US'; 
-        utterance.rate = 0.85; 
-        utterance.pitch = 1.0; 
-        
-        window.speechSynthesis.speak(utterance);
-    }
-
-    if (speakSentenceBtn) {
-        speakSentenceBtn.addEventListener("click", () => {
-            if (isCurrentChallengeSolved) {
-                speakFullSolvedSentence();
-            }
-        });
-    }
-
-    function loadNextChallenge() {
-        if (currentIdx >= bankChallenges.length) {
-            currentIdx = 0;
-            bankChallenges.sort(() => Math.random() - 0.5);
+        function playSound(isSpecial = false) {
+            try {
+                if (isSpecial) {
+                    spaceKeySound.currentTime = 0;
+                    spaceKeySound.play().catch(e => {});
+                } else {
+                    normalKeySound.currentTime = 0;
+                    normalKeySound.play().catch(e => {});
+                }
+            } catch (e) {}
         }
 
-        currentChallengeObj = bankChallenges[currentIdx];
-        isCurrentChallengeSolved = false; 
+        function speakFullSolvedSentence() {
+            if (!currentChallengeObj.sentence) return;
+            window.speechSynthesis.cancel();
 
-        let rawSentence = currentChallengeObj.sentence;
-        let finalSentenceHtml = rawSentence.replace("___", `<span class="blank-space">_______</span>`);
+            let fullCorrectSentence = currentChallengeObj.sentence.replace("___", currentChallengeObj.correct_word.trim());
 
-        sentenceText.innerHTML = finalSentenceHtml;
-        translationText.innerHTML = `🎯 الترجمة المساعدة: <strong>${currentChallengeObj.translation}</strong>`;
+            let utterance = new SpeechSynthesisUtterance(fullCorrectSentence);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.85;
+            utterance.pitch = 1.0;
 
-        challengeField.value = "";
-        challengeField.className = "challenge-input";
-        challengeField.disabled = false; 
-        challengeFeedback.textContent = "";
-        
-        revealedCharactersCount = 0;
-        hintDisplay.style.display = "none";
-        hintDisplay.textContent = "";
-        
-        speakSentenceBtn.disabled = true;
-        speakSentenceBtn.classList.remove("active");
-        
-        // منع الفوكس التلقائي على الموبايل لتفادي قفز الشاشة بشكل مفاجئ للاعب
-        if (window.innerWidth > 768) {
+            window.speechSynthesis.speak(utterance);
+        }
+
+        if (speakSentenceBtn) {
+            speakSentenceBtn.addEventListener("click", () => {
+                if (isCurrentChallengeSolved) {
+                    speakFullSolvedSentence();
+                }
+            });
+        }
+
+        function loadNextChallenge() {
+            if (currentIdx >= bankChallenges.length) {
+                currentIdx = 0;
+                bankChallenges.sort(() => Math.random() - 0.5);
+            }
+
+            currentChallengeObj = bankChallenges[currentIdx];
+            isCurrentChallengeSolved = false;
+
+            let rawSentence = currentChallengeObj.sentence;
+            let finalSentenceHtml = rawSentence.replace("___", `<span class="blank-space">_______</span>`);
+
+            sentenceText.innerHTML = finalSentenceHtml;
+            translationText.innerHTML = `🎯 الترجمة المساعدة: <strong>${currentChallengeObj.translation}</strong>`;
+
+            challengeField.value = "";
+            challengeField.className = "challenge-input";
+            challengeField.disabled = false;
+            challengeFeedback.textContent = "";
+
+            revealedCharactersCount = 0;
+            hintDisplay.style.display = "none";
+            hintDisplay.textContent = "";
+
+            speakSentenceBtn.disabled = true;
+            speakSentenceBtn.classList.remove("active");
+
+            // منع الفوكس التلقائي على الموبايل لتفادي قفز الشاشة بشكل مفاجئ للاعب
+            if (window.innerWidth > 768) {
+                challengeField.focus();
+            }
+        }
+
+        loadNextChallenge();
+
+        bulbHintBtn.addEventListener("click", () => {
+            if (isCurrentChallengeSolved) return;
+            let correct = currentChallengeObj.correct_word.trim();
+            let maxLen = correct.length;
+
+            if (maxLen > 0) {
+                if (revealedCharactersCount < maxLen) {
+                    revealedCharactersCount++;
+                }
+                let visiblePart = correct.substring(0, revealedCharactersCount);
+                let hiddenPart = "•".repeat(maxLen - revealedCharactersCount);
+
+                hintDisplay.textContent = `${visiblePart}${hiddenPart}`;
+                hintDisplay.style.display = "inline-block";
+            }
             challengeField.focus();
-        }
-    }
+        });
 
-    loadNextChallenge();
+        challengeField.addEventListener("input", () => {
+            let typed = challengeField.value;
+            let correct = currentChallengeObj.correct_word.trim();
 
-    bulbHintBtn.addEventListener("click", () => {
-        if (isCurrentChallengeSolved) return; 
-        let correct = currentChallengeObj.correct_word.trim();
-        let maxLen = correct.length;
-
-        if (maxLen > 0) {
-            if (revealedCharactersCount < maxLen) {
-                revealedCharactersCount++;
-            }
-            let visiblePart = correct.substring(0, revealedCharactersCount);
-            let hiddenPart = "•".repeat(maxLen - revealedCharactersCount);
-            
-            hintDisplay.textContent = `${visiblePart}${hiddenPart}`;
-            hintDisplay.style.display = "inline-block";
-        }
-        challengeField.focus();
-    });
-
-    challengeField.addEventListener("input", () => {
-        let typed = challengeField.value;
-        let correct = currentChallengeObj.correct_word.trim();
-
-        if (correct.toLowerCase().startsWith(typed.toLowerCase())) {
-            challengeField.classList.remove("input-error");
-        } else {
-            challengeField.classList.add("input-error");
-        }
-    });
-
-    challengeField.addEventListener("keydown", (e) => {
-        if (isCurrentChallengeSolved) return; 
-
-        const isSpecial = (e.key === " " || e.key === "Enter");
-        playSound(isSpecial);
-
-        if (isSpecial) {
-            e.preventDefault();
-
-            let typedValue = challengeField.value.trim();
-            let correctValue = currentChallengeObj.correct_word.trim();
-
-            if (typedValue.toLowerCase() === correctValue.toLowerCase() && typedValue !== "") {
-                score++;
-                scoreCount.textContent = score;
-                isCurrentChallengeSolved = true; 
-
-                sentenceText.innerHTML = currentChallengeObj.sentence.replace("___", `<span style="color: #4ade80; font-weight: bold;">${correctValue}</span>`);
-
-                challengeFeedback.className = "feedback-zone text-success";
-                challengeFeedback.innerHTML = "✓ رائـع جداً! استمع للجملة الكاملة الآن 🎧🌟";
-                challengeField.disabled = true; 
-
-                speakSentenceBtn.disabled = false;
-                speakSentenceBtn.classList.add("active");
-
-                scoreCount.parentElement.style.transform = "scale(1.1)";
-                setTimeout(() => scoreCount.parentElement.style.transform = "scale(1)", 200);
-
-                speakFullSolvedSentence();
-
-                currentIdx++;
-                setTimeout(loadNextChallenge, 2550);
-            } else if (typedValue !== "") {
-                challengeFeedback.className = "feedback-zone text-error";
-                challengeFeedback.innerHTML = "✗ الكلمة غير صحيحة لتكملة الجملة! ركز وحاول ثانية 🛠️";
+            if (correct.toLowerCase().startsWith(typed.toLowerCase())) {
+                challengeField.classList.remove("input-error");
+            } else {
                 challengeField.classList.add("input-error");
             }
-        }
-    });
+        });
 
-    skipBtn.addEventListener("click", () => {
-        window.speechSynthesis.cancel(); 
-        currentIdx++;
-        loadNextChallenge();
+        challengeField.addEventListener("keydown", (e) => {
+            if (isCurrentChallengeSolved) return;
+
+            const isSpecial = (e.key === " " || e.key === "Enter");
+            playSound(isSpecial);
+
+            if (isSpecial) {
+                e.preventDefault();
+
+                let typedValue = challengeField.value.trim();
+                let correctValue = currentChallengeObj.correct_word.trim();
+
+                if (typedValue.toLowerCase() === correctValue.toLowerCase() && typedValue !== "") {
+                    score++;
+                    scoreCount.textContent = score;
+                    isCurrentChallengeSolved = true;
+
+                    sentenceText.innerHTML = currentChallengeObj.sentence.replace("___", `<span style="color: #4ade80; font-weight: bold;">${correctValue}</span>`);
+
+                    challengeFeedback.className = "feedback-zone text-success";
+                    challengeFeedback.innerHTML = "✓ رائـع جداً! استمع للجملة الكاملة الآن 🎧🌟";
+                    challengeField.disabled = true;
+
+                    speakSentenceBtn.disabled = false;
+                    speakSentenceBtn.classList.add("active");
+
+                    scoreCount.parentElement.style.transform = "scale(1.1)";
+                    setTimeout(() => scoreCount.parentElement.style.transform = "scale(1)", 200);
+
+                    speakFullSolvedSentence();
+
+                    currentIdx++;
+                    setTimeout(loadNextChallenge, 2550);
+                } else if (typedValue !== "") {
+                    challengeFeedback.className = "feedback-zone text-error";
+                    challengeFeedback.innerHTML = "✗ الكلمة غير صحيحة لتكملة الجملة! ركز وحاول ثانية 🛠️";
+                    challengeField.classList.add("input-error");
+                }
+            }
+        });
+
+        skipBtn.addEventListener("click", () => {
+            window.speechSynthesis.cancel();
+            currentIdx++;
+            loadNextChallenge();
+        });
     });
-});
 </script>
 
-<?php 
+<?php
 // 3. تضمين ملف الفوتر لإغلاق الأوسمة
-include 'includes/footer.php'; 
+include 'includes/footer.php';
 ?>

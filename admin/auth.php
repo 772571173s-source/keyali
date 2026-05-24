@@ -10,4 +10,3 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || !in_array($_SES
     header("Location: ../login.php?error=forbidden");
     exit();
 }
-?>

@@ -5,14 +5,14 @@ header('Content-Type: application/json');
 
 include 'config/db.php';
 
-$source = isset($_GET['source']) ? $_GET['source'] : 'global'; 
-$game_mode = isset($_GET['mode']) ? $_GET['mode'] : 'words'; 
-$language = isset($_GET['lang']) ? $_GET['lang'] : ''; 
+$source = isset($_GET['source']) ? $_GET['source'] : 'global';
+$game_mode = isset($_GET['mode']) ? $_GET['mode'] : 'words';
+$language = isset($_GET['lang']) ? $_GET['lang'] : '';
 
 $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
 
 try {
-    if ($game_mode === 'ranked') $source = 'global'; 
+    if ($game_mode === 'ranked') $source = 'global';
 
     // --- 🟢 طور القواعد ---
     if ($game_mode === 'grammar') {
@@ -23,11 +23,11 @@ try {
         } else {
             $stmt = $pdo->query("SELECT text, hint, category FROM grammar_challenges ORDER BY id ASC");
         }
-    } 
+    }
     // --- 🎯 الكلمات الشخصية ---
     elseif ($source === 'personal') {
         if (!$user_id) throw new Exception('يجب تسجيل الدخول أولاً!');
-        
+
         if ($game_mode === 'codes') {
             if (!empty($language)) {
                 $stmt = $pdo->prepare("SELECT word_text AS text, word_hint AS hint FROM user_words WHERE user_id = ? AND type = 'code' AND language_name = ? ORDER BY id ASC");
@@ -40,7 +40,7 @@ try {
             $stmt = $pdo->prepare("SELECT word_text AS text, word_hint AS hint FROM user_words WHERE user_id = ? AND type = 'word' ORDER BY id ASC");
             $stmt->execute([$user_id]);
         }
-    } 
+    }
     // --- 🌐 الكلمات العامة ---
     else {
         if ($game_mode === 'codes') {
@@ -62,9 +62,7 @@ try {
 
     $words_output = $stmt->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode(['status' => 'success', 'words' => $words_output]);
-
 } catch (Exception $e) {
     // إرجاع رسالة خطأ بتنسيق JSON نظيف
     echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
 }
-?>
