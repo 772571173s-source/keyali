@@ -4,27 +4,82 @@ include '../config/db.php';
 $message = "";
 $msg_type = "";
 
+/* ================= GET CATEGORIES ================= */
+$categories = $pdo->query("
+    SELECT TRIM(category) AS category
+    FROM grammar_challenges
+    WHERE category IS NOT NULL
+      AND TRIM(category) != ''
+    GROUP BY TRIM(category)
+    ORDER BY TRIM(category) ASC
+")->fetchAll(PDO::FETCH_COLUMN);
+
 /* ================= ADD / DELETE ================= */
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if (isset($_POST['action']) && $_POST['action'] == 'add_challenge') {
-        $stmt = $pdo->prepare("INSERT INTO grammar_challenges (category, text, hint) VALUES (?, ?, ?)");
-        $stmt->execute([
-            trim($_POST['category']),
-            trim($_POST['text']),
-            trim($_POST['hint'])
-        ]);
+
+        $category_type = $_POST['category_type'] ?? 'old';
+        $category = "";
+
+        if ($category_type === 'new') {
+            $category = trim($_POST['new_category'] ?? '');
+        } else {
+            $category = trim($_POST['category'] ?? '');
+        }
+
+        $text = trim($_POST['text'] ?? '');
+        $hint = trim($_POST['hint'] ?? '');
+
+        if ($category == "" || $text == "" || $hint == "") {
+            $message = "⚠️ الرجاء تعبئة جميع الحقول";
+            $msg_type = "error";
+        } else {
+            $check = $pdo->prepare("
+                SELECT id FROM grammar_challenges
+                WHERE LOWER(TRIM(text)) = LOWER(TRIM(?))
+                LIMIT 1
+            ");
+            $check->execute([$text]);
+
+            if ($check->fetch()) {
+                $message = "⚠️ هذه الجملة موجودة مسبقاً";
+                $msg_type = "error";
+            } else {
+                $stmt = $pdo->prepare("
+                    INSERT INTO grammar_challenges (category, text, hint)
+                    VALUES (?, ?, ?)
+                ");
+                $stmt->execute([$category, $text, $hint]);
+
+                $message = "✅ تمت إضافة الجملة بنجاح";
+                $msg_type = "success";
+
+                $categories = $pdo->query("
+                    SELECT TRIM(category) AS category
+                    FROM grammar_challenges
+                    WHERE category IS NOT NULL
+                      AND TRIM(category) != ''
+                    GROUP BY TRIM(category)
+                    ORDER BY TRIM(category) ASC
+                ")->fetchAll(PDO::FETCH_COLUMN);
+            }
+        }
     }
 
     if (isset($_POST['action']) && $_POST['action'] == 'delete_challenge') {
         $stmt = $pdo->prepare("DELETE FROM grammar_challenges WHERE id = ?");
         $stmt->execute([intval($_POST['challenge_id'])]);
+
+        $message = "🗑️ تم حذف الجملة";
+        $msg_type = "success";
     }
 }
 
 /* ================= LAST 5 ================= */
 $all_challenges = $pdo->query("
-    SELECT * FROM grammar_challenges
+    SELECT *
+    FROM grammar_challenges
     ORDER BY id DESC
     LIMIT 5
 ")->fetchAll(PDO::FETCH_ASSOC);
@@ -41,7 +96,6 @@ $existing_sentences = $pdo->query("
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>مختبر القواعد</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
@@ -53,29 +107,28 @@ $existing_sentences = $pdo->query("
             --border: #1f2937;
             --primary: #7c3aed;
             --danger: #ef4444;
+            --success: #22c55e;
             --text: #e5e7eb;
             --muted: #9ca3af;
         }
 
         * {
-            box-sizing: border-box
+            box-sizing: border-box;
         }
 
         body {
             margin: 0;
-            font-family: Tajawal;
+            font-family: Tajawal, sans-serif;
             background: linear-gradient(135deg, #0b1220, #050816);
             color: var(--text);
         }
 
-        /* container */
         .container {
             max-width: 900px;
             margin: auto;
             padding: 15px;
         }
 
-        /* HEADER */
         .header {
             display: flex;
             justify-content: space-between;
@@ -88,7 +141,6 @@ $existing_sentences = $pdo->query("
             font-weight: bold;
         }
 
-        /* BACK BUTTON */
         .back {
             background: #1e293b;
             color: #94a3b8;
@@ -99,35 +151,39 @@ $existing_sentences = $pdo->query("
             border: 1px solid var(--border);
         }
 
-        /* GRID */
         .grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
         }
 
-        /* CARD */
         .card {
             background: rgba(17, 24, 39, 0.85);
             border: 1px solid var(--border);
             border-radius: 14px;
             padding: 14px;
             backdrop-filter: blur(10px);
+            margin-bottom: 12px;
         }
 
-        /* INPUTS */
         input,
-        textarea {
+        textarea,
+        select {
             width: 100%;
             padding: 10px;
             margin-top: 6px;
+            margin-bottom: 8px;
             border-radius: 10px;
             border: 1px solid var(--border);
             background: #0f172a;
             color: white;
+            font-family: Tajawal, sans-serif;
         }
 
-        /* BUTTON */
+        select {
+            cursor: pointer;
+        }
+
         button {
             width: 100%;
             padding: 10px;
@@ -136,9 +192,9 @@ $existing_sentences = $pdo->query("
             background: var(--primary);
             color: white;
             cursor: pointer;
+            font-family: Tajawal, sans-serif;
         }
 
-        /* ITEM */
         .item {
             display: flex;
             justify-content: space-between;
@@ -147,7 +203,6 @@ $existing_sentences = $pdo->query("
             border-bottom: 1px solid var(--border);
         }
 
-        /* BADGE */
         .badge {
             font-size: 11px;
             background: rgba(124, 58, 237, 0.15);
@@ -157,7 +212,6 @@ $existing_sentences = $pdo->query("
             display: inline-block;
         }
 
-        /* DELETE */
         .del {
             background: var(--danger);
             width: auto;
@@ -165,13 +219,35 @@ $existing_sentences = $pdo->query("
             font-size: 12px;
         }
 
-        /* MSG */
         .msg {
             font-size: 12px;
             margin-top: 5px;
+            margin-bottom: 8px;
         }
 
-        /* ================= RESPONSIVE ================= */
+        .alert {
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        .alert.success {
+            background: rgba(34, 197, 94, .15);
+            color: #86efac;
+            border: 1px solid rgba(34, 197, 94, .3);
+        }
+
+        .alert.error {
+            background: rgba(239, 68, 68, .15);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, .3);
+        }
+
+        .new-category-box {
+            display: none;
+        }
+
         @media(max-width:768px) {
             .grid {
                 grid-template-columns: 1fr;
@@ -193,110 +269,147 @@ $existing_sentences = $pdo->query("
 
 <body>
 
-    <div class="container">
+<div class="container">
 
-        <!-- HEADER -->
-        <div class="header">
-            <div class="title">🧪 مختبر القواعد</div>
-            <a href="index.php" class="back">⬅️ لوحة التحكم</a>
+    <div class="header">
+        <div class="title">🧪 مختبر القواعد</div>
+        <a href="index.php" class="back">⬅️ لوحة التحكم</a>
+    </div>
+
+    <?php if (!empty($message)): ?>
+        <div class="alert <?= htmlspecialchars($msg_type) ?>">
+            <?= htmlspecialchars($message) ?>
         </div>
+    <?php endif; ?>
 
-        <!-- GRID -->
-        <div class="grid">
+    <div class="grid">
 
-            <!-- ADD -->
-            <div class="card">
-                <h3>➕ إضافة جملة</h3>
-
-                <form method="POST">
-                    <input type="hidden" name="action" value="add_challenge">
-
-                    <input type="text" name="category" placeholder="التصنيف">
-                    <input type="text" name="text" id="sentenceInput" placeholder="الجملة الإنجليزية">
-                    <input type="text" name="hint" placeholder="الترجمة">
-
-                    <div id="checkResult" class="msg"></div>
-
-                    <button>إضافة</button>
-                </form>
-            </div>
-
-            <!-- CHECK -->
-            <div class="card">
-                <h3>🔎 تحقق قبل الإضافة</h3>
-
-                <input type="text" id="searchCheck" placeholder="اكتب الجملة للتأكد">
-                <div id="liveResult" class="msg"></div>
-
-                <p style="font-size:12px;color:#9ca3af;margin-top:10px;">
-                    يتم التحقق من وجود الجملة قبل الإضافة
-                </p>
-            </div>
-
-        </div>
-
-        <!-- LAST 5 -->
         <div class="card">
-            <h3>📚 آخر 5 جمل</h3>
+            <h3>➕ إضافة جملة</h3>
 
-            <?php foreach ($all_challenges as $row): ?>
-                <div class="item">
+            <form method="POST">
+                <input type="hidden" name="action" value="add_challenge">
 
-                    <div>
-                        <span class="badge"><?= htmlspecialchars($row['category']) ?></span>
-                        <div style="margin-top:5px"><?= htmlspecialchars($row['text']) ?></div>
-                        <div style="font-size:12px;color:#9ca3af">
-                            <?= htmlspecialchars($row['hint']) ?>
-                        </div>
-                    </div>
+                <select name="category_type" id="categoryType">
+                    <option value="old">اختيار تصنيف موجود</option>
+                    <option value="new">إضافة تصنيف جديد</option>
+                </select>
 
-                    <form method="POST" onsubmit="return confirm('حذف؟');">
-                        <input type="hidden" name="action" value="delete_challenge">
-                        <input type="hidden" name="challenge_id" value="<?= $row['id'] ?>">
-                        <button class="del">حذف</button>
-                    </form>
-
+                <div id="oldCategoryBox">
+                    <select name="category">
+                        <option value="">اختر التصنيف</option>
+                        <?php foreach ($categories as $cat): ?>
+                            <option value="<?= htmlspecialchars($cat) ?>">
+                                <?= htmlspecialchars($cat) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
-            <?php endforeach; ?>
 
+                <div id="newCategoryBox" class="new-category-box">
+                    <input type="text" name="new_category" placeholder="اكتب التصنيف الجديد">
+                </div>
+
+                <input type="text" name="text" id="sentenceInput" placeholder="الجملة الإنجليزية">
+                <input type="text" name="hint" placeholder="الترجمة">
+
+                <div id="checkResult" class="msg"></div>
+
+                <button type="submit">إضافة</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>🔎 تحقق قبل الإضافة</h3>
+
+            <input type="text" id="searchCheck" placeholder="اكتب الجملة للتأكد">
+            <div id="liveResult" class="msg"></div>
+
+            <p style="font-size:12px;color:#9ca3af;margin-top:10px;">
+                يتم التحقق من وجود الجملة قبل الإضافة
+            </p>
         </div>
 
     </div>
 
-    <!-- JS -->
-    <script>
-        const existing = <?= json_encode($existing_sentences) ?>;
+    <div class="card">
+        <h3>📚 آخر 5 جمل</h3>
 
-        /* check function */
-        function check(value, target) {
-            value = value.trim().toLowerCase();
+        <?php if (count($all_challenges) === 0): ?>
+            <p style="font-size:13px;color:#9ca3af;">لا توجد جمل حتى الآن</p>
+        <?php endif; ?>
 
-            if (value === "") {
-                target.innerHTML = "";
-                return;
-            }
+        <?php foreach ($all_challenges as $row): ?>
+            <div class="item">
 
-            let found = existing.some(x => x.toLowerCase().trim() === value);
+                <div>
+                    <span class="badge"><?= htmlspecialchars($row['category']) ?></span>
 
-            if (found) {
-                target.innerHTML = "⚠️ الجملة موجودة مسبقاً";
-                target.style.color = "#ef4444";
-            } else {
-                target.innerHTML = "✅ يمكن إضافتها";
-                target.style.color = "#22c55e";
-            }
+                    <div style="margin-top:5px">
+                        <?= htmlspecialchars($row['text']) ?>
+                    </div>
+
+                    <div style="font-size:12px;color:#9ca3af">
+                        <?= htmlspecialchars($row['hint']) ?>
+                    </div>
+                </div>
+
+                <form method="POST" onsubmit="return confirm('حذف؟');">
+                    <input type="hidden" name="action" value="delete_challenge">
+                    <input type="hidden" name="challenge_id" value="<?= intval($row['id']) ?>">
+                    <button class="del" type="submit">حذف</button>
+                </form>
+
+            </div>
+        <?php endforeach; ?>
+
+    </div>
+
+</div>
+
+<script>
+    const existing = <?= json_encode($existing_sentences, JSON_UNESCAPED_UNICODE) ?>;
+
+    function check(value, target) {
+        value = value.trim().toLowerCase();
+
+        if (value === "") {
+            target.innerHTML = "";
+            return;
         }
 
-        /* live check */
-        document.getElementById("searchCheck").addEventListener("input", function() {
-            check(this.value, document.getElementById("liveResult"));
-        });
+        let found = existing.some(x => String(x).toLowerCase().trim() === value);
 
-        document.getElementById("sentenceInput").addEventListener("input", function() {
-            check(this.value, document.getElementById("checkResult"));
-        });
-    </script>
+        if (found) {
+            target.innerHTML = "⚠️ الجملة موجودة مسبقاً";
+            target.style.color = "#ef4444";
+        } else {
+            target.innerHTML = "✅ يمكن إضافتها";
+            target.style.color = "#22c55e";
+        }
+    }
+
+    document.getElementById("searchCheck").addEventListener("input", function () {
+        check(this.value, document.getElementById("liveResult"));
+    });
+
+    document.getElementById("sentenceInput").addEventListener("input", function () {
+        check(this.value, document.getElementById("checkResult"));
+    });
+
+    document.getElementById("categoryType").addEventListener("change", function () {
+        let oldBox = document.getElementById("oldCategoryBox");
+        let newBox = document.getElementById("newCategoryBox");
+
+        if (this.value === "new") {
+            oldBox.style.display = "none";
+            newBox.style.display = "block";
+        } else {
+            oldBox.style.display = "block";
+            newBox.style.display = "none";
+        }
+    });
+</script>
 
 </body>
-
 </html>

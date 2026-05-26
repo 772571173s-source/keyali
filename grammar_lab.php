@@ -3,9 +3,19 @@ include 'config/db.php';
 include 'includes/header.php';
 
 try {
-    $cat_stmt = $pdo->query("SELECT DISTINCT category FROM grammar_challenges ORDER BY category ASC");
+    $cat_stmt = $pdo->query("
+        SELECT TRIM(category) AS category
+        FROM grammar_challenges
+        WHERE category IS NOT NULL
+          AND TRIM(category) != ''
+        GROUP BY TRIM(category)
+        ORDER BY TRIM(category) ASC
+    ");
+
     $categories = $cat_stmt->fetchAll(PDO::FETCH_COLUMN);
+
 } catch (PDOException $e) {
+
     $categories = [];
 }
 ?>
@@ -29,283 +39,174 @@ try {
     }
 
     body {
-
         background:
             radial-gradient(circle at top right, rgba(168, 85, 247, .15), transparent 30%),
             radial-gradient(circle at bottom left, rgba(124, 58, 237, .15), transparent 30%),
             var(--bg);
 
         color: var(--text);
-
         font-family: 'Segoe UI', sans-serif;
-
         overflow-x: hidden;
     }
 
     .grammar-wrapper {
-
         min-height: 100vh;
-
         width: 100%;
-
         padding: 25px;
-
         display: flex;
         justify-content: center;
         align-items: center;
     }
 
     .grammar-lab-box {
-
         width: 100%;
         max-width: 950px;
-
         background: rgba(15, 23, 42, .92);
-
         border: 1px solid rgba(255, 255, 255, .08);
-
         border-radius: 35px;
-
         padding: 35px;
-
         position: relative;
-
         overflow: hidden;
-
         backdrop-filter: blur(14px);
-
         box-shadow:
             0 0 40px rgba(168, 85, 247, .12),
             0 25px 60px rgba(0, 0, 0, .5);
     }
 
     .grammar-lab-box::before {
-
         content: '';
-
         position: absolute;
-
         width: 320px;
         height: 320px;
-
         background: rgba(168, 85, 247, .12);
-
         border-radius: 50%;
-
         top: -120px;
         right: -120px;
-
         filter: blur(30px);
     }
 
-    /* HEADER */
-
     .top-bar {
-
         display: flex;
-
         justify-content: space-between;
-
         align-items: center;
-
         gap: 20px;
-
         flex-wrap: wrap;
-
         margin-bottom: 30px;
     }
 
     .logo-title h1 {
-
         font-size: 38px;
-
         font-weight: 800;
-
         line-height: 1.3;
-
         background: linear-gradient(to right, #fff, #d8b4fe);
-
         -webkit-background-clip: text;
-
         -webkit-text-fill-color: transparent;
     }
 
     .logo-title span {
-
         color: var(--muted);
-
         font-size: 14px;
     }
 
-    /* SCORE */
-
     .score-box {
-
         background: linear-gradient(135deg, var(--neon), var(--neon2));
-
         padding: 16px 30px;
-
         border-radius: 22px;
-
         text-align: center;
-
         box-shadow: 0 12px 25px rgba(168, 85, 247, .35);
     }
 
     .score-box small {
-
         display: block;
-
         color: #ede9fe;
-
         margin-bottom: 6px;
     }
 
     .score-box h2 {
-
         font-size: 30px;
     }
 
-    /* SELECT */
-
     .controls {
-
         margin-bottom: 25px;
-
         display: flex;
-
         justify-content: center;
     }
 
     #category-select {
-
         width: 260px;
-
         max-width: 100%;
-
         background: #1e293b;
-
         color: white;
-
         border: none;
-
         outline: none;
-
         padding: 14px 18px;
-
         border-radius: 18px;
-
         font-size: 15px;
-
         transition: .3s;
-
         box-shadow: 0 8px 20px rgba(0, 0, 0, .3);
     }
 
     #category-select:focus {
-
         box-shadow: 0 0 0 3px rgba(168, 85, 247, .35);
     }
 
-    /* CARD */
-
     .challenge-card {
-
         background: linear-gradient(145deg, #111827, #172554);
-
         padding: 35px;
-
         border-radius: 30px;
-
         text-align: center;
-
         margin-bottom: 30px;
-
         border: 1px solid rgba(255, 255, 255, .05);
-
         box-shadow: 0 15px 35px rgba(0, 0, 0, .35);
     }
 
     .challenge-label {
-
         color: #c084fc;
-
         font-size: 13px;
-
         letter-spacing: 2px;
-
         text-transform: uppercase;
-
         margin-bottom: 12px;
     }
 
     #grammar-hint-text {
-
         font-size: 28px;
-
         font-weight: 700;
-
         line-height: 1.7;
-
         margin-bottom: 25px;
     }
 
-    /* HINT BUTTON */
-
     .hint-btn {
-
         position: relative;
-
         display: inline-flex;
-
         align-items: center;
-
         justify-content: center;
-
         gap: 12px;
-
         background: linear-gradient(135deg, #facc15, #f59e0b);
-
         color: white;
-
         border: none;
-
         padding: 16px 38px;
-
         border-radius: 20px;
-
         font-size: 16px;
-
         font-weight: 800;
-
         cursor: pointer;
-
         overflow: hidden;
-
         transition: .35s ease;
-
         box-shadow:
             0 12px 25px rgba(245, 158, 11, .35),
             0 0 25px rgba(250, 204, 21, .18);
     }
 
     .hint-btn::before {
-
         content: '';
-
         position: absolute;
-
         top: 0;
         left: -120%;
-
         width: 100%;
         height: 100%;
-
         background: linear-gradient(to right,
                 transparent,
                 rgba(255, 255, 255, .35),
                 transparent);
-
         transition: .6s;
     }
 
@@ -314,23 +215,18 @@ try {
     }
 
     .hint-btn:hover {
-
         transform: translateY(-5px) scale(1.04);
-
         box-shadow:
             0 18px 35px rgba(245, 158, 11, .45),
             0 0 35px rgba(250, 204, 21, .4);
     }
 
     .hint-icon {
-
         font-size: 24px;
-
         animation: bulbGlow 2s infinite;
     }
 
     @keyframes bulbGlow {
-
         0% {
             transform: scale(1);
             filter: drop-shadow(0 0 0px #fde047);
@@ -347,45 +243,26 @@ try {
         }
     }
 
-    /* BUILD AREA */
-
     .assembly-zone {
-
         min-height: 120px;
-
         background: rgba(15, 23, 42, .7);
-
         border: 2px dashed #334155;
-
         border-radius: 25px;
-
         padding: 25px;
-
         display: flex;
-
         flex-wrap: wrap;
-
         direction: ltr;
-
         justify-content: flex-start;
-
         align-items: center;
-
         gap: 12px;
-
         transition: .3s;
-
         margin-bottom: 30px;
     }
 
     .assembly-zone::before {
-
         content: 'Build the sentence here ✨';
-
         color: #64748b;
-
         width: 100%;
-
         font-size: 14px;
     }
 
@@ -393,113 +270,47 @@ try {
         display: none;
     }
 
-    /* WORDS */
-
     #shuffled-cubes-zone {
-
         display: flex;
-
         justify-content: center;
-
         align-items: center;
-
         gap: 14px;
-
         flex-wrap: wrap;
     }
 
     .word-cube {
-
         background: linear-gradient(145deg, #1e293b, #111827);
-
         border: 1px solid #334155;
-
         color: white;
-
         padding: 15px 24px;
-
         border-radius: 18px;
-
         cursor: pointer;
-
         font-weight: 700;
-
         transition: .3s;
-
         user-select: none;
-
         position: relative;
-
         overflow: hidden;
-
         box-shadow: 0 8px 20px rgba(0, 0, 0, .3);
     }
 
-    .word-cube::before {
-
-        content: '';
-
-        position: absolute;
-
-        top: 0;
-        left: -100%;
-
-        width: 100%;
-        height: 100%;
-
-        background: linear-gradient(to right,
-                transparent,
-                rgba(255, 255, 255, .15),
-                transparent);
-
-        transition: .5s;
-    }
-
-    .word-cube:hover::before {
-        left: 100%;
-    }
-
-    .word-cube:hover {
-
-        transform: translateY(-6px);
-
-        border-color: var(--neon);
-
-        box-shadow: 0 0 20px rgba(168, 85, 247, .45);
-    }
-
     .word-cube.selected {
-
         opacity: 0;
-
         transform: scale(0);
-
         pointer-events: none;
     }
 
-    /* BUILT WORDS */
-
     .built-cube {
-
         background: linear-gradient(135deg, var(--neon), var(--neon2));
-
         color: white;
-
         padding: 15px 24px;
-
         border-radius: 16px;
-
         font-weight: bold;
-
         cursor: pointer;
-
         animation: pop .25s ease;
-
         box-shadow: 0 10px 25px rgba(168, 85, 247, .35);
     }
 
     @keyframes pop {
-
         from {
             transform: scale(.5);
             opacity: 0;
@@ -511,51 +322,36 @@ try {
         }
     }
 
-    /* HINT EFFECT */
+    .hint-highlight {
+        animation: pulse 1.5s infinite;
+        border: 2px solid #facc15 !important;
+    }
 
     @keyframes pulse {
-
         0% {
             transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(250, 204, 21, .7);
         }
 
         50% {
-            transform: scale(1.12);
-            box-shadow: 0 0 0 18px rgba(250, 204, 21, 0);
+            transform: scale(1.08);
         }
 
         100% {
             transform: scale(1);
-            box-shadow: 0 0 0 0 rgba(250, 204, 21, 0);
         }
     }
 
-    .hint-highlight {
-
-        animation: pulse 1.5s infinite;
-
-        border: 2px solid #facc15 !important;
-    }
-
-    /* SUCCESS & ERROR */
-
     .success {
-
         border-color: var(--success) !important;
-
         box-shadow: 0 0 25px rgba(34, 197, 94, .25);
     }
 
     .shake {
-
         animation: shake .3s;
-
         border-color: var(--danger) !important;
     }
 
     @keyframes shake {
-
         0%,
         100% {
             transform: translateX(0);
@@ -569,105 +365,6 @@ try {
             transform: translateX(10px);
         }
     }
-
-    /* TABLET */
-
-    @media(max-width:768px) {
-
-        .grammar-wrapper {
-            padding: 18px;
-        }
-
-        .grammar-lab-box {
-            padding: 25px;
-            border-radius: 28px;
-        }
-
-        .top-bar {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .score-box {
-            width: 100%;
-        }
-
-        .logo-title h1 {
-            font-size: 28px;
-        }
-
-        #grammar-hint-text {
-            font-size: 22px;
-        }
-    }
-
-    /* MOBILE */
-
-    @media(max-width:600px) {
-
-        .grammar-wrapper {
-            padding: 12px;
-        }
-
-        .grammar-lab-box {
-            padding: 18px;
-            border-radius: 24px;
-        }
-
-        .logo-title h1 {
-            font-size: 22px;
-        }
-
-        .logo-title span {
-            font-size: 12px;
-        }
-
-        #grammar-hint-text {
-            font-size: 18px;
-        }
-
-        .challenge-card {
-            padding: 22px;
-            border-radius: 24px;
-        }
-
-        #category-select {
-            width: 100%;
-            font-size: 14px;
-        }
-
-        .hint-btn {
-            width: 100%;
-            padding: 14px;
-            font-size: 15px;
-            border-radius: 16px;
-        }
-
-        .hint-icon {
-            font-size: 22px;
-        }
-
-        .word-cube,
-        .built-cube {
-            padding: 12px 16px;
-            font-size: 14px;
-            border-radius: 14px;
-        }
-
-        .assembly-zone {
-            padding: 18px;
-            min-height: 100px;
-            gap: 10px;
-        }
-
-        #shuffled-cubes-zone {
-            gap: 10px;
-        }
-
-        .score-box h2 {
-            font-size: 24px;
-        }
-    }
 </style>
 
 <div class="grammar-wrapper">
@@ -678,7 +375,7 @@ try {
 
             <div class="logo-title">
 
-                <h1> مختبر القواعد </h1>
+                <h1>مختبر القواعد</h1>
 
                 <span>تحدي قواعد اللغة الإنجليزية التفاعلي</span>
 
@@ -686,7 +383,7 @@ try {
 
             <div class="score-box">
 
-                <small> Score</small>
+                <small>Score</small>
 
                 <h2 id="user-score">0</h2>
 
@@ -703,9 +400,7 @@ try {
                 <?php foreach ($categories as $cat): ?>
 
                     <option value="<?= htmlspecialchars($cat) ?>">
-
                         <?= htmlspecialchars($cat) ?>
-
                     </option>
 
                 <?php endforeach; ?>
@@ -716,24 +411,14 @@ try {
 
         <div class="challenge-card">
 
-            <div class="challenge-label">
-
-                التحدي
-
-            </div>
+            <div class="challenge-label">التحدي</div>
 
             <div id="grammar-hint-text">
-
                 Choose a category...
-
             </div>
 
             <button class="hint-btn" onclick="showHint()">
-
                 <span class="hint-icon">💡</span>
-
-
-
             </button>
 
         </div>
@@ -748,35 +433,51 @@ try {
 
 <script>
     const sounds = {
-
         click: new Audio("assets/sounds/click.mp3"),
-
         correct: new Audio("assets/sounds/correct.mp3"),
-
         error: new Audio("assets/sounds/error.mp3")
     };
 
     let fetchedRules = [];
-
     let currentIndex = 0;
-
     let score = 0;
 
     async function loadGrammarRules() {
 
-        let cat = document.getElementById('category-select').value;
+        try {
 
-        let res = await fetch(
-            `get-game-words.php?mode=grammar&category=${encodeURIComponent(cat)}`
-        );
+            let cat = document.getElementById('category-select').value || 'all';
 
-        let data = await res.json();
+            let res = await fetch(
+                `get-game-words.php?mode=grammar&category=${encodeURIComponent(cat)}`
+            );
 
-        fetchedRules = data.words || [];
+            let data = await res.json();
 
-        currentIndex = 0;
+            fetchedRules = data.words || [];
 
-        renderRule();
+            currentIndex = 0;
+
+            if (fetchedRules.length === 0) {
+
+                document.getElementById('grammar-hint-text').textContent =
+                    'لا توجد جمل في هذا التصنيف';
+
+                document.getElementById('assembly-display-zone').innerHTML = '';
+                document.getElementById('shuffled-cubes-zone').innerHTML = '';
+
+                return;
+            }
+
+            renderRule();
+
+        } catch (error) {
+
+            console.error(error);
+
+            document.getElementById('grammar-hint-text').textContent =
+                'حدث خطأ أثناء تحميل التحديات';
+        }
     }
 
     function renderRule() {
@@ -788,31 +489,31 @@ try {
         document.getElementById('grammar-hint-text').textContent = rule.hint;
 
         let assemblyZone = document.getElementById('assembly-display-zone');
-
         let shuffledZone = document.getElementById('shuffled-cubes-zone');
 
-        assemblyZone.innerHTML = "";
-
-        shuffledZone.innerHTML = "";
+        assemblyZone.innerHTML = '';
+        shuffledZone.innerHTML = '';
 
         assemblyZone.classList.remove('success');
+        assemblyZone.classList.remove('shake');
 
-        let words = rule.text.split(" ");
+        let words = rule.text.trim().split(/\s+/);
 
         [...words]
-
-        .sort(() => Math.random() - 0.5)
-
-            .forEach(word => {
+            .sort(() => Math.random() - 0.5)
+            .forEach((word, index) => {
 
                 let div = document.createElement('div');
 
                 div.className = 'word-cube';
-
                 div.textContent = word;
+                div.dataset.index = index;
 
                 div.onclick = () => {
 
+                    if (div.classList.contains('selected')) return;
+
+                    sounds.click.currentTime = 0;
                     sounds.click.play();
 
                     div.classList.add('selected');
@@ -820,17 +521,15 @@ try {
                     let built = document.createElement('div');
 
                     built.className = 'built-cube';
-
                     built.textContent = word;
+                    built.dataset.index = index;
 
                     built.onclick = () => {
 
                         built.remove();
-
                         div.classList.remove('selected');
 
                         toggleAssemblyPlaceholder();
-
                         checkSentence(words);
                     };
 
@@ -850,47 +549,42 @@ try {
         let assemblyZone = document.getElementById('assembly-display-zone');
 
         if (assemblyZone.children.length > 0) {
-
             assemblyZone.classList.add('has-items');
-
         } else {
-
             assemblyZone.classList.remove('has-items');
         }
     }
 
     function showHint() {
 
-        let original = fetchedRules[currentIndex].text.split(" ");
+        if (!fetchedRules[currentIndex]) return;
+
+        let original = fetchedRules[currentIndex].text.trim().split(/\s+/);
 
         let assemblyZone = document.getElementById('assembly-display-zone');
-
         let shuffledZone = document.getElementById('shuffled-cubes-zone');
 
         let assembled = Array.from(assemblyZone.children)
             .map(c => c.textContent);
 
-        let nextWord = original.find(word => !assembled.includes(word));
+        let nextIndex = assembled.length;
+        let nextWord = original[nextIndex];
 
-        if (nextWord) {
+        if (!nextWord) return;
 
-            let target = Array.from(shuffledZone.children)
+        let target = Array.from(shuffledZone.children)
+            .find(c =>
+                c.textContent === nextWord &&
+                !c.classList.contains('selected')
+            );
 
-                .find(c =>
-                    c.textContent === nextWord &&
-                    !c.classList.contains('selected')
-                );
+        if (target) {
 
-            if (target) {
+            target.classList.add('hint-highlight');
 
-                target.classList.add('hint-highlight');
-
-                setTimeout(() => {
-
-                    target.classList.remove('hint-highlight');
-
-                }, 1500);
-            }
+            setTimeout(() => {
+                target.classList.remove('hint-highlight');
+            }, 1500);
         }
     }
 
@@ -907,10 +601,11 @@ try {
 
                 assemblyZone.classList.add('success');
 
+                sounds.correct.currentTime = 0;
                 sounds.correct.play();
 
                 let msg = new SpeechSynthesisUtterance(
-                    originalWords.join(" ")
+                    originalWords.join(' ')
                 );
 
                 msg.lang = 'en-US';
@@ -926,12 +621,14 @@ try {
                     currentIndex++;
 
                     if (currentIndex < fetchedRules.length) {
-
                         renderRule();
-
                     } else {
 
-                        alert("🎉 انتصار! لقد أتقنت جميع قواعد النحو.");
+                        document.getElementById('grammar-hint-text').textContent =
+                            '🎉 انتصار! لقد أنهيت جميع التحديات';
+
+                        document.getElementById('assembly-display-zone').innerHTML = '';
+                        document.getElementById('shuffled-cubes-zone').innerHTML = '';
                     }
 
                 }, 2200);
@@ -940,18 +637,13 @@ try {
 
                 assemblyZone.classList.add('shake');
 
+                sounds.error.currentTime = 0;
                 sounds.error.play();
 
                 setTimeout(() => {
-
                     assemblyZone.classList.remove('shake');
-
                 }, 500);
             }
-
-        } else {
-
-            assemblyZone.style.borderColor = "#334155";
         }
     }
 
